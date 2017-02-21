@@ -1,0 +1,436 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-date-picker-item/paper-date-picker-item.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html"> 
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/google-map/google-map-search.html">
+<link rel="import" href="../bower_components/google-map/google-map-marker.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+
+
+<script src="../bower_components/moment/min/locales.js"></script>
+
+
+<dom-module id="form-encuesta">
+    <template>
+        <style>
+        </style>
+        <paper-toast id="toast_error" duration="3000">Hubo un error. Seguramente hay datos incompletos. Por favor, <strong>complete todos los campos</strong></paper-toast>
+        <firebase-app
+            name="ingresantesUTN"
+            auth-domain=<Auth domain que creo en mi cuenta de Firebase>
+            api-key=<llave que se saca de la cuenta que creo en firebase>
+            database-url=<url a la base de datos>
+        ></firebase-app>
+
+        <firebase-document
+        app-name="ingresantesUTN"
+        path= <URL donde se van a guardar/acceder los datos>
+        data="{{encuestado}}"
+        ></firebase-document>
+
+        <firebase-auth
+            app-name="ingresantesUTN"
+            id="login"
+            user="{{usuario}}"
+        ></firebase-auth>
+
+        <div class="container">
+            <div class="page-header">
+                <h1>Encuesta para Ingresantes <small>Todos los datos son requeridos (salvo que se especifique lo contrario).</small></h1>
+            </div>
+            <div class="row">
+                <div class="col-md-8 col-sm-12">
+                    <paper-input label="Apellido y Nombre Completo" value="{{nombreApellido}}"></paper-input>
+                    <p>Fecha de Nacimiento: <paper-date-picker-item locale="es" icon="icons:today" date="{{fechaNacimiento}}" date-format="ll"></paper-date-picker-item></p>
+                    <p>
+                        ¿Vivías en Concordia al momento de elegir la facultad? <paper-toggle-button on-change="ViveConcordia" checked>[[viveConcordia]]</paper-toggle-button>
+                        <div hidden$="[[viveConcordia_bool]]">
+                            <paper-input label="Ciudad de donde venís" value="{{ciudadNatal}}"></paper-input>
+                            ¿Viajas a diario o alquilas?: <paper-toggle-button on-change="Alquila" checked>[[alquila]]</paper-toggle-button>
+                        </div>
+                    </p>
+                    <paper-input label="Escuela secundaria donde te egresaste" value="{{escuelaSecundaria}}"></paper-input>
+                    <paper-input label="Título Secundario" value="{{tituloSecundaria}}"></paper-input>
+                    ¿Adeuda Materias? <paper-toggle-button on-change="AdeudaMaterias">[[adeudaMaterias]]</paper-toggle-button>
+                    <paper-input hidden$="[[adeudaMaterias_bool]]" label="¿Cuantas?" value="{{cantMaterias}}"></paper-input>
+                    ¿Para qué carrera estás inscripto?
+                    <paper-listbox selected="{{carreraInscripto}}" attr-for-selected="value">
+                        <paper-item value="Ingeniería Civil">Ingeniería Civil</paper-item>
+                        <paper-item value="Ingenieria Eléctrica">Ingeniería Eléctrica</paper-item>
+                        <paper-item value="Ingeniería Industrial">Ingeniería Industrial</paper-item>
+                        <paper-item value="Licenciatura en Administración Rural">Licenciatura en Administración Rural</paper-item>
+                    </paper-listbox>
+                    ¿Tenés alguna experiencia en estudios superiores?
+                    <paper-toggle-button on-change="ExpEstSuperiores">[[expEstSuperiores]]</paper-toggle-button>
+                    <div hidden$="[[expEstSuperiores_bool]]">
+                        <paper-input label="Carrera que cursó anteriormente" value="{{carrPrevia}}"></paper-input>
+                        <paper-input label="Institución donde lo hizo" value="{{instPrevia}}"></paper-input>
+                    </div>
+                    ¿Trabajas? <paper-toggle-button on-change="Trabajo">[[trabajo]]</paper-toggle-button>
+                    <div hidden$="[[trabajo_bool]]">
+                        <paper-input label="Lugar de trabajo" value="{{lugarTrabajo}}"></paper-input>
+                        <paper-input label="Horarios de trabajo" value="{{horarioTrabajo}}"></paper-input>
+                    </div>
+                    ¿Trabajaste anteriormente? <paper-toggle-button on-change="ExpTrabajo">[[expTrabajo]]</paper-toggle-button>
+                    ¿Practicas algún deporte? <paper-toggle-button on-change="Deporte">[[deporte]]</paper-toggle-button>
+                    <paper-input label="¿Qué deporte practicas?" value="{{deportePractica}}" hidden$="[[deporte_bool]]"></paper-input>
+                    ¿Te gustaría practicar algún deporte en la facultad? <paper-toggle-button on-change="DeporteFacultad">[[deporteFacultad]]</paper-toggle-button>
+                    Título obtenido por tu padre (elije el de mayor jerarquía):
+                    <paper-listbox selected="{{tituloPadre}}" attr-for-selected="value">
+                        <paper-item value="Ninguno">Ninguno</paper-item>
+                        <paper-item value="Primario">Primario</paper-item>
+                        <paper-item value="Secundario">Secundario</paper-item>
+                        <paper-item value="Terciario">Terciario</paper-item>
+                        <paper-item value="Universitario">Universitario</paper-item>
+                    </paper-listbox>
+                    Título obtenido por tu madre (elije el de mayor jerarquía):
+                    <paper-listbox selected="{{tituloMadre}}" attr-for-selected="value">
+                        <paper-item value="Ninguno">Ninguno</paper-item>
+                        <paper-item value="Primario">Primario</paper-item>
+                        <paper-item value="Secundario">Secundario</paper-item>
+                        <paper-item value="Terciario">Terciario</paper-item>
+                        <paper-item value="Universitario">Universitario</paper-item>
+                    </paper-listbox>
+                    ¿Tenés hermanos? <paper-toggle-button on-change="Hermanos">[[hermanos]]</paper-toggle-button>
+                    <div hidden$="[[hermanos_bool]]">
+                        <paper-input label="Cantidad de hermanos" value="{{cantHermanos}}"></paper-input>
+                        <paper-input label="Edad de tus hermanos separados por comas: 10,11,12" value="{{edadHermanos}}"></paper-input>
+                    </div>
+                    Estado civil:
+                    <paper-listbox selected="{{estadoCivil}}" attr-for-selected="value">
+                        <paper-item value="Soltero/a">Soltero/a</paper-item>
+                        <paper-item value="Comprometido/a">Comprometido/a</paper-item>
+                        <paper-item value="Casado/a">Casado/a</paper-item>
+                        <paper-item value="Divorciado/a">Divorciado/a</paper-item>
+                        <paper-item value="Viudo/a">Viudo/a</paper-item>
+                    </paper-listbox>
+                    ¿Tenés hijos? <paper-toggle-button on-change="Hijos">[[hijos]]</paper-toggle-button>
+                    <h4>
+                        Vos, al igual que tus compañeros, llegaste a esta facultad haciendo previamente un proceso
+                        interior de elección. Nuestras preguntas respecto a eso...
+                    </h4>
+                    <paper-textarea label="¿De qué manera realizaste la elección de la carrera?" value="{{eleccionCarrera}}"></paper-textarea>
+                    <paper-textarea label="¿Conoces alguna persona que haya estudiado o se haya recibido? Si no, dejar en blanco" value="{{conocidoCarrera}}"></paper-textarea>
+                    <div hidden$="[[!conocidoCarrera.length]]">
+                            Influyó en la toma de tu decisión <paper-toggle-button on-change="InfluyoEleccion">[[influyoEleccion]]</paper-toggle-button>
+                    </div>
+                    ¿Cómo obtuviste información de la carrera y de esta facultad?
+                    <paper-listbox multi selected-values="{{informacionCarreraFacultad}}" attr-for-selected="value">
+                        <paper-item value="Cartelera Virtual">Cartelera Virtual</paper-item>
+                        <paper-item value="Facebook">Facebook</paper-item>
+                        <paper-item value="Twitter">Twitter</paper-item>
+                        <paper-item value="Instagram">Instagram</paper-item>
+                        <paper-item value="Web Oficial">Web Oficial</paper-item>
+                        <paper-item value="Radio">Radio</paper-item>
+                        <paper-item value="Diario">Diario</paper-item>
+                        <paper-item value="Televisión">Televisión</paper-item>
+                        <paper-item value="Un amigo">Un amigo</paper-item>
+                    </paper-listbox>
+                    <paper-input label="¿Qué expectativas tenés?" value="{{expectativas}}"></paper-input>
+                    <paper-input label="¿Qué temores o dudas tenés?" value="{{temoresDudas}}"></paper-input>
+                </div>
+            
+            <div class="col-sm-12 center-block">
+                    <paper-button raiser class="btn btn-success" on-click="anterior" id="anterior">Anterior</paper-button>
+                    <paper-button raised class="btn btn-info" on-click="enviarDatos" id="enviarDatos">Enviar Datos</paper-button>
+            </div>
+            
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'form-encuesta',
+            properties:{
+                        app: Object,
+                        results:Array,
+                        usuario: Object,
+                        //Variables de formulario
+                        viveConcordia_bool:{
+                            type: Boolean,
+                            value:true
+                        },
+                        adeudaMaterias_bool: {
+                            type: Boolean,
+                            value: true
+                        },
+                        expEstSuperiores_bool:{
+                            type: Boolean,
+                            value:true
+                        },
+                        trabajo_bool:{
+                            type: Boolean,
+                            value: true
+                        },
+                        deporte_bool:{
+                            type: Boolean,
+                            value: true
+                        },
+                        hermanos_bool:{
+                            type: Boolean,
+                            value: true
+                        },
+                        selected:{
+                            type: Number,
+                            value:2,
+                            notify: true
+                        },
+                        //Variables de usuario
+                        nombreApellido: String,
+                        fechaNacimiento:{
+                            type: Date,
+                            value: new Date()
+                        },
+                        viveConcordia:{
+                            type: String,
+                            value: "Si"
+                        },
+                        ciudadNatal: String,
+                        alquila:{
+                            type: String,
+                            value:"Alquila en la ciudad"
+                        },
+                        egresoEscuela:Number,
+                        escuelaSecundaria: String,
+                        tituloSecundaria: String,
+                        adeudaMaterias:{
+                            type: String,
+                            value: "No"
+                        },
+                        cantMaterias: Number,
+                        carreraInscripto: String,
+                        expEstSuperiores:{
+                            type: String,
+                            value: "No"
+                        },
+                        carrPrevia:String,
+                        instPrevia:String,
+                        trabajo:{
+                            type: String,
+                            value: "No"
+                        },
+                        lugarTrabajo: String,
+                        horarioTrabajo: String,
+                        expTrabajo:{
+                            type: String,
+                            value: "No"
+                        },
+                        deporte:{
+                            type: String,
+                            value: "No"
+                        },
+                        deportePractica: String,
+                        deporteFacultad:{
+                            type: String,
+                            value: "No"
+                        },
+                        tituloPadre: String,
+                        tituloMadre: String,
+                        hermanos:{
+                            type: String,
+                            value:"No"
+                        },
+                        cantHermanos: String,
+                        edadHermanos: String,
+                        estadoCivil: String,
+                        hijos:{
+                            type: String,
+                            value: "No"
+                        },
+                        eleccionCarrera: String,
+                        conocidoCarrera:{
+                            type: String,
+                            value:""
+                        },
+                        influyoEleccion:{
+                            type: String,
+                            value: "No"
+                        },
+                        informacionCarreraFacultad: Array,
+                        expectativas: String,
+                        temoresDudas: String
+
+                    },
+                    encuestado: Object,
+            //Funciones
+            Alquila: function(){
+                if(this.alquila=="Alquila en la ciudad"){
+                    this.alquila="Viaja a diario"
+                }else{
+                    this.alquila="Alquila en la ciudad"
+                }
+            },
+            ViveConcordia: function(){
+                if(this.viveConcordia=='Si'){
+                    this.viveConcordia='No'
+                }else{
+                    this.viveConcordia='Si'
+                }
+                this.viveConcordia_bool=!this.viveConcordia_bool
+            },
+            AdeudaMaterias: function(){
+                if(this.adeudaMaterias=="No"){
+                    this.adeudaMaterias="Si"
+                }else{
+                    this.adeudaMaterias="No"
+                }
+                this.adeudaMaterias_bool=!this.adeudaMaterias_bool
+            },
+            ExpEstSuperiores: function(){
+                if(this.expEstSuperiores=="Si"){
+                    this.expEstSuperiores="No"
+                }else{
+                    this.expEstSuperiores="Si"
+                }
+                this.expEstSuperiores_bool=!this.expEstSuperiores_bool
+            },
+            Trabajo: function(){
+                if(this.trabajo=="Si"){
+                    this.trabajo="No"
+                }else{
+                    this.trabajo="Si"
+                }
+                this.trabajo_bool=!this.trabajo_bool
+            },
+            ExpTrabajo: function(){
+                if(this.expTrabajo=="Si"){
+                    this.expTrabajo="No"
+                }else{
+                    this.expTrabajo="Si"
+                }
+            },
+            Deporte: function(){
+                if(this.deporte=="Si"){
+                    this.deporte="No"
+                }else{
+                    this.deporte="Si"
+                }
+                this.deporte_bool=!this.deporte_bool
+            },
+            DeporteFacultad: function(){
+                if(this.deporteFacultad=="Si"){
+                    this.deporteFacultad="No"
+                }else{
+                    this.deporteFacultad="Si"
+                }
+            },
+            Hermanos: function(){
+                if(this.hermanos == "Si"){
+                    this.hermanos="No"
+                }else{
+                    this.hermanos="Si"
+                }
+                this.hermanos_bool=!this.hermanos_bool
+            },
+            Hijos: function(){
+                if(this.hijos == "Si"){
+                    this.hijos="No"
+                }else{
+                    this.hijos="Si"
+                }
+            },
+            InfluyoEleccion: function(){
+                if(this.influyoEleccion =="Si"){
+                    this.influyoEleccion = "No"
+                }else{
+                    this.influyoEleccion ="Si"
+                }
+            },
+            anterior: function(){
+                this.selected--;
+            },
+            enviarDatos: function(){
+                this.selected++;
+            },
+            enviarDatos: function(){
+                var JSONBody={
+                    nombreApellido: this.nombreApellido,
+                    nacimiento: this.fechaNacimiento,
+                    viveConcordia: this.viveConcordia,
+                    escuelaSecundaria: this.escuelaSecundaria,
+                    tituloSecundaria: this.tituloSecundaria,
+                    adeudaMaterias: this.adeudaMaterias,
+                    carreraInscripto: this.carreraInscripto,
+                    expEstSuperiores: this.expEstSuperiores,
+                    trabajo: this.trabajo,
+                    expTrabajo: this.expTrabajo,
+                    deporte: this.deporte,
+                    deporteFacultad: this.deporteFacultad,
+                    tituloPadre: this.tituloPadre,
+                    tituloMadre: this.tituloMadre,
+                    hermanos: this.hermanos,
+                    estadoCivil: this.estadoCivil,
+                    hijos: this.hijos,
+                    eleccionCarrera: this.eleccionCarrera,
+                    influyoEleccion: this.influyoEleccion,
+                    conocidoCarrera: this.conocidoCarrera,
+                    informacionCarreraFacultad: this.informacionCarreraFacultad,
+                    expectativas: this.expectativas,
+                    temoresDudas: this.temoresDudas
+                };
+
+                if(this.viveConcordia=="No"){
+                    JSONBody.ciudadNatal=this.ciudadNatal;
+                    JSONBody.alquila=this.alquila;
+                }
+                if(this.adeudaMaterias="Si"){
+                    JSONBody.cantMaterias=this.cantMaterias;
+                }
+                if(this.expEstSuperiores == "Si"){
+                    JSONBody.carrPrevia=this.carrPrevia;
+                    JSONBody.instPrevia=this.instPrevia;
+                }
+                if(this.trabajo=="Si"){
+                    JSONBody.lugarTrabajo=this.lugarTrabajo;
+                    JSONBody.horarioTrabajo=this.horarioTrabajo;
+                }
+                if(this.deporte=="Si"){
+                    JSONBody.deportePractica=this.deportePractica;
+                }
+                if(this.hermanos=="Si"){
+                    JSONBody.cantHermanos=this.cantHermanos;
+                    JSONBody.edadHermanos=this.edadHermanos;
+                }
+
+                   if(
+                    this.nombreApellido=='' ||
+                    this.viveConcordia==''||
+                    this.escuelaSecundaria==''||
+                    this.tituloSecundaria==''||
+                    this.adeudaMaterias==''||
+                    this.carreraInscripto==''||
+                    this.expEstSuperiores==''||
+                    this.trabajo==''||
+                    this.expTrabajo==''||
+                    this.deporteFacultad==''||
+                    this.tituloPadre==''||
+                    this.tituloMadre==''||
+                    this.estadoCivil==''||
+                    this.hijos==''||
+                    this.influyoEleccion==''||
+                    this.informacionCarreraFacultad.length==0 ||
+                    this.expectativas==''||
+                    this.temoresDudas==''){
+                        this.$.toast_error.open();
+                    }else{
+                        this.encuestado = JSONBody;
+                        this.selected++;
+                    }
+                     
+            },
+            ready:function(){
+                this.$.login.signInAnonymously()
+                .then(function(response) {})
+                .catch(function(error) { console.log(error)})
+            }
+        });
+    </script>
+</dom-module>

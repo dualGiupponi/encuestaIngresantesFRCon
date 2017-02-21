@@ -1,0 +1,87 @@
+<dom-module id="presentacion-utn">
+    <template>
+        <style>
+            #principal{
+               transform: translateY(30%);
+            }
+            .panel{
+                opacity: 0.95;
+            }
+            #siguiente{
+                position: relative;
+                left: 45%;
+                bottom: 25px;
+            }
+            
+        </style>
+        <div id="background" style="position: fixed; z-index: -99; width: 100%; height: 100%"></div>
+        <script>
+            // 2. This code loads the IFrame Player API code asynchronously.
+            var tag = document.createElement('script');
+
+            tag.src = "https://www.youtube.com/iframe_api";
+            var firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+
+
+            var player;
+            function onYouTubeIframeAPIReady() {
+                player = new YT.Player('background', {
+                videoId: '86UufsoGgHc',
+                playerVars:{
+                    autoplay: 1,
+                    controls: 0,
+                    disablekb: 1,
+                    fs:0,
+                    loop:0,
+                    modestbranding:1,
+                    showinfo:0
+                },
+                events:{
+                    onReady: function(e){
+                        e.target.mute();
+                    }
+                }
+            });
+            }
+        </script>
+        <div class="container">
+            <div id="principal">
+                <div class="panel panel-default animated zoomIn">
+                    <div class="panel-heading">
+                        <img src="../public/logo-utn-concordia (1).jpg" alt="logo utn concordia" class="img-responsive center-block">
+                    </div>
+                    <div class="panel panel-body">
+                        <h3 class="text-center">
+                        La Universidad Tecnológica Nacional Facultad Regional Concordia tiene el agrado de <br>
+                        darles la bienvenida a los <strong>ingresantes</strong> de las carreras de grado de: <br>
+                            <ul class="listgroup">
+                                <li class="list-group-item">Ingeniería Eléctrica</li>
+                                <li class="list-group-item">Ingeniería Civil</li>
+                                <li class="list-group-item">Ingeniería Industrial</li>
+                                <li class="list-group-item">Licenciatura en Administración Rural</li>
+                            </ul>
+                        </h3>
+                    </div>
+                    <paper-button raised class="btn btn-info" on-click="siguiente" id="siguiente">Siguiente</paper-button>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'presentacion-utn',
+            properties:{
+                selected:{
+                    type: Number,
+                    value:0,
+                    notify: true
+                }
+            },
+            siguiente: function(){
+                this.selected++;
+            }
+        });
+    </script>
+</dom-module>
